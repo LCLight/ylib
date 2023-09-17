@@ -1,5 +1,5 @@
 # ylib
-工具
+erlang工具
 
 ylib_flame
 ----
@@ -21,7 +21,7 @@ ylib_flame
 
 执行成功后，会提示：  
 writing:Your/Path/stacks_XXX.out, Count  
-run script to dump svg
+run script to dump svg  
 ./stack_to_flame.sh  Your/Path/stacks_XXX.out  
 安装了perl直接执行即可
 
