@@ -84,7 +84,12 @@ start2(#{src_type := ?SRC_TYPE_TRACE} = Opts) ->
     MatchSpec = [{'_', [], [{message, {{cp, {caller}}}}]}],
     erlang:trace_pattern(on_load, MatchSpec, [local]),
     erlang:trace_pattern({'_', '_', '_'}, MatchSpec, [local]),
-    erlang:trace(Target, true, [{tracer, Tracer} | [call, arity, return_to, monotonic_timestamp, running, set_on_spawn] ]),
+	TimeFlag =
+		case maps:get(timestamp, Opts, false) of
+			true -> timestamp;
+			_ -> monotonic_timestamp 
+		end,
+    erlang:trace(Target, true, [{tracer, Tracer} | [call, arity, return_to, TimeFlag, running, set_on_spawn] ]),
     {ok, Tracer};
 start2(#{src_type := SrcType} = Opts) when SrcType=:=?SRC_TYPE_ETS orelse SrcType=:=?SRC_TYPE_MSG ->
     Task = spawn_task(fun()-> erlang:register(?FLAME_ANALYSE_NAME, erlang:self()), start_analyse(Opts) end),
@@ -169,6 +174,7 @@ tracer_loop(Opts, LinkPid, Count) ->
             dump_trace_result(Opts),
             erlang:throw(Reason);
         Msg ->
+			%% ?MSG_PRINT("Msg => ~w~n", [Msg]),
             trace_handle(Msg, Opts)
     end,
     case erlang:get(stopping) =:= undefined andalso maps:get(protect, Opts) of
@@ -291,7 +297,7 @@ insert_run_time(_Ets, _From, [], _Us, _Ts) ->
 insert_run_time(_Ets, _From, _Stack, undefined, _Ts) ->
     ok;
 insert_run_time(Ets, From, Stack, Us, Ts) ->
-    Diff = Ts - Us,
+    Diff = time_diff(Us, Ts),
     case erlang:get({last_stack, From}) of
         undefined ->
             Index = 1,
@@ -593,3 +599,12 @@ new_index() ->
     Index = case erlang:get(msg_index) of undefined -> 1; V -> V+1 end,
     erlang:put(msg_index, Index),
     Index.
+time_diff({Mega, Secs, Micro1}, {Mega, Secs, Micro2}) ->
+	Micro2 - Micro1;
+time_diff({Mega, Secs1, Micro1}, {Mega, Secs2, Micro2}) ->
+	(Secs2-Secs1) * 1000*1000 + Micro2 - Micro1;
+time_diff({Mega1, Secs1, Micro1}, {Mega2, Secs2, Micro2}) ->
+	(Mega2-Mega1) * 1000 * 1000 * 1000 * 1000 + (Secs2-Secs1) * 1000*1000 + Micro2 - Micro1;
+time_diff(Ts1, Ts2) when erlang:is_integer(Ts1) ->
+	Ts2 - Ts1.
+	
