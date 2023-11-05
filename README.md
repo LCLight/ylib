@@ -26,7 +26,7 @@ run script to dump svg
 安装了perl直接执行即可
 
 demo
----
+
     %% demo.erl
     t() ->
         trace函数
@@ -46,5 +46,41 @@ demo
 ![demo](flame_stacks_2023_09_04_15_09_03.svg)
 
 其它
---- 
+
 灰色部分为调用gen_server:call的等待时间
+
+ylib_opts
+----
+用于解析选项参数
+
+    %% demo.es  
+    main(Args) ->  
+        io:format("~p~n", [ylib_opts:parse_opts(Args, #{auto_opt=>true})]),  
+        ok.
+调用时  
+
+    escript demo.es "./www","/tmp","--url", "192.168.0.5","8080","192.168.0.6","8081","-u","admin" ,"--passwd","abcd"   
+
+    $> #{"--default" => ["./www","/tmp"],
+    "--passwd" => ["abcd"],
+    "--url" => ["192.168.0.5","8080","192.168.0.6","8081"],
+    "-u" => ["admin"]}
+
+直接使用
+
+    1> ylib_opts:parse_opts(["./www","/tmp","--url", "192.168.0.5","8080","192.168.0.6","8081","-u","admin" ,"--passwd","abcd"],
+    [{"--url", [{str,int}]}, {"-u", str}, {"--passwd", str}]).
+
+    #{"--default" => ["./www","/tmp"],
+    "--passwd" => "abcd",
+    "--url" => [{"192.168.0.5",8080},{"192.168.0.6",8081}],
+    "-u" => "admin"}
+
+如果加上 atom_key => true，则所有key会去掉"-"或者"--"并转为atom。  
+
+    #{default => ["./www","/tmp"],
+    passwd => "abcd",u => "admin",
+    url => [{"192.168.0.5",8080},{"192.168.0.6",8081}]}
+
+
+
