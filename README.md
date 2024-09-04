@@ -84,3 +84,36 @@ ylib_opts
 
 
 
+ylib_trace
+----
+用于跟踪函数调用，消息顺序等
+
+    使用例子
+    ylib_trace:wr(erlang, send).
+    ylib_trace:wrf(erlang, send, fun(Ret)-> lists:member(Ret, [a,b,c]) end).
+    ylib_trace:wf(erlang, send, fun({call, [_, M]}) -> M=:=d; ({return, Ret}) -> Ret =:=a ; (A) -> false end).
+    ylib_trace:wn('n1@127.0.0.1', erlang, send).
+    ylib_trace:wna(erlang, send).
+
+    跟踪消息
+    werl -name n1@127.0.0.1
+    werl -name n2@127.0.0.1
+    werl -name n3@127.0.0.1
+    再在n3执行
+    lists:foldl(fun(Node, Pid) ->
+        erlang:spawn(Node, fun()->
+                erlang:register(a, self()),
+                fun RF(P) ->
+                    receive Msg ->
+                        io:format("~ts => ~w => ~p~n", [node(), Msg, P]),
+                        case erlang:is_pid(P) of true -> erlang:send(P, Msg);_ -> ok end
+                    end,
+                    RF(P)
+                end(Pid) end)
+        end, undefined, ['n1@127.0.0.1', 'n2@127.0.0.1', 'n3@127.0.0.1']).
+    
+    ylib_trace:msga(self(), erlang, send).
+    erlang:send(a, msg).
+
+
+
