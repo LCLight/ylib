@@ -117,3 +117,21 @@ ylib_trace
 
 
 
+
+ylib_time
+----
+用于处理时间相关内容
+
+    使用例子
+    1> ylib_time:now().
+    1727772606
+
+    2> ylib_time:date(ylib_time:now()).
+    {2024,10,1}
+
+    3> ylib_time:datetime(ylib_time:now()).
+    {{2024,10,1},{16,50,52}}
+
+    4> ylib_time:day_of_week(ylib_time:now()).
+    2
+
