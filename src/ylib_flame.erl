@@ -340,7 +340,7 @@ trace_stack_hande({trace_ts, _Ps, call, MFA, {cp, CpMFA}, Ts}, From, [CpMFA|_]=S
 
 trace_stack_hande({trace_ts, _Ps, call, _MFA, {cp, _}, Ts} = TraceTs, From, [_|StackRest]=Stack, Us, Ets, _IsCalc) ->
     insert_run_time(Ets, From, Stack, Us, Ts),
-    trace_stack_hande(TraceTs, From, StackRest, Us, Ets, _IsCalc);
+    trace_stack_hande(TraceTs, From, StackRest, Ts, Ets, _IsCalc);
 
 trace_stack_hande({trace_ts, _Ps, return_to, MFA, Ts}, From, [Current, MFA|Stack], Us, Ets, _IsCalc) ->
     insert_run_time(Ets, From, [Current,MFA|Stack], Us, Ts),
